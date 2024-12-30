@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/domain/entities/post.dart';
-import 'package:task_manager/presentation/screens/action_buttom.dart';
+import 'package:task_manager/presentation/screens/action_button.dart';
 
 class PostCard extends StatelessWidget {
   final Post post;

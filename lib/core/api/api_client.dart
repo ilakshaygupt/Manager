@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:task_manager/core/api/HTTPMethod.dart';
 import 'package:task_manager/core/api/either.dart';
+import 'package:task_manager/core/consts/api_consts.dart';
 
 class APIError implements Exception {
   final String message;
@@ -20,7 +21,7 @@ class APIRequest<Parameters, Model> {
     Map<String, String>? headers,
     required Model Function(dynamic data) fromJson,
   }) async {
-    final url = Uri.parse("https://jsonplaceholder.typicode.com$path");
+    final url = Uri.parse("$apiUrl$path");
 
     final requestHeaders = {
       "Content-Type": "application/json",
