@@ -1,5 +1,3 @@
-
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:task_manager/domain/repositories/i_posts_repository.dart';
 
@@ -44,7 +42,11 @@ class PostsNotifier extends AsyncNotifier<List<Post>> {
     final result = await getPostsUseCase();
 
     return result.fold(
-      (error) => throw error,
+      (error) {
+        state =
+            AsyncError(error, StackTrace.current); 
+        return [];
+      },
       (posts) => posts,
     );
   }

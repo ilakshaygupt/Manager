@@ -1,5 +1,3 @@
-
-
 import 'package:task_manager/core/api/HTTPMethod.dart';
 import 'package:task_manager/core/api/either.dart';
 

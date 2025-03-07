@@ -1,6 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:task_manager/core/api/HTTPMethod.dart';
 import 'package:task_manager/core/api/either.dart';
 import 'package:task_manager/core/consts/api_consts.dart';
@@ -13,7 +14,27 @@ class APIError implements Exception {
   String toString() => message;
 }
 
-class APIRequest<Parameters, Model> {
+class APIRequest {
+  static final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: apiUrl!,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "x-mock-match-request-body": "true",
+      },
+    ),
+  );
+
+  static Future<bool> _isInternetAvailable() async {
+    try {
+      final foo = await InternetAddress.lookup('google.com');
+      return foo.isNotEmpty && foo[0].rawAddress.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
   static Future<Either<APIError, Model>> call<Parameters, Model>({
     required String path,
     required HTTPMethod method,
@@ -21,29 +42,27 @@ class APIRequest<Parameters, Model> {
     Map<String, String>? headers,
     required Model Function(dynamic data) fromJson,
   }) async {
-    final url = Uri.parse("$apiUrl$path");
-
-    final requestHeaders = {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "x-mock-match-request-body": "true",
-      if (headers != null) ...headers,
-    };
-
     try {
-      final response = http.Request(method.name.toUpperCase(), url)
-        ..headers.addAll(requestHeaders)
-        ..body = parameters != null ? jsonEncode(parameters) : '';
 
-      final streamedResponse = await http.Client().send(response);
-      final responseData = await streamedResponse.stream.bytesToString();
+      bool isConnected = await _isInternetAvailable();
+      if (!isConnected) {
+        return Left<APIError, Model>(APIError("No internet connection"));
+      }
 
-      if (streamedResponse.statusCode == 200 ||
-          streamedResponse.statusCode == 201) {
-        return Right<APIError, Model>(fromJson(jsonDecode(responseData)));
+      final response = await _dio.request(
+        path,
+        data: parameters != null ? jsonEncode(parameters) : null,
+        options: Options(
+          method: method.name.toUpperCase(),
+          headers: headers,
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return Right<APIError, Model>(fromJson(response.data));
       } else {
-        return Left<APIError, Model>(APIError(
-            "Request failed with status: ${streamedResponse.statusCode}"));
+        return Left<APIError, Model>(
+            APIError("Request failed with status: ${response.statusCode}"));
       }
     } catch (e) {
       return Left<APIError, Model>(APIError("Failed to make the request: $e"));
