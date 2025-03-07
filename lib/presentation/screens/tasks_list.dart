@@ -1,36 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:task_manager/domain/entities/task.dart';
-import 'package:task_manager/presentation/providers/tasks_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:task_manager/presentation/blocs/tasks_service/task_bloc.dart';
+import 'package:task_manager/presentation/blocs/tasks_service/task_event.dart';
+import 'package:task_manager/presentation/blocs/tasks_service/task_state.dart';
 
-class TasksList extends ConsumerWidget {
-  final List<Task> tasks;
-
-  const TasksList({required this.tasks, super.key});
+class TasksList extends StatelessWidget {
+  const TasksList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ListView.builder(
-      itemCount: tasks.length,
-      itemBuilder: (context, index) {
-        final task = tasks[index];
-        return ListTile(
-          title: Text(task.title),
-          leading: Checkbox(
-            value: task.isCompleted,
-            onChanged: (value) {
-              ref
-                  .read(taskProvider.notifier)
-                  .toggleTaskCompletion(task.id, value!);
+  Widget build(BuildContext context) {
+    return BlocBuilder<TaskBloc, TaskState>(
+      builder: (context, state) {
+        if (state is TaskLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is TaskError) {
+          return Center(child: Text('Error: ${state.message}'));
+        } else if (state is TaskLoaded) {
+          if (state.filteredTasks.isEmpty) {
+            return const Center(child: Text('No tasks available'));
+          }
+          return ListView.builder(
+            itemCount: state.filteredTasks.length,
+            itemBuilder: (context, index) {
+              final task = state.filteredTasks[index];
+              return ListTile(
+                title: Text(task.title),
+                leading: Checkbox(
+                  value: task.isCompleted,
+                  onChanged: (value) {
+                    if (value != null) {
+                      context.read<TaskBloc>().add(
+                            ToggleTaskCompletion(task.id, value),
+                          );
+                    }
+                  },
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    context.read<TaskBloc>().add(DeleteTask(task.id));
+                  },
+                ),
+              );
             },
-          ),
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
-              ref.read(taskProvider.notifier).deleteTask(task.id);
-            },
-          ),
-        );
+          );
+        }
+        return const Center(child: Text('Something went wrong'));
       },
     );
   }

@@ -57,7 +57,7 @@ class PostCard extends StatelessWidget {
                         Text(
                           'Post #${post.id}',
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -82,7 +82,7 @@ class PostCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -115,7 +115,7 @@ class PostCard extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                  color: theme.colorScheme.onSurface,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -158,8 +158,7 @@ class PostCard extends StatelessWidget {
                                         'Post #${post.id}',
                                         style:
                                             theme.textTheme.bodySmall?.copyWith(
-                                          color: theme.colorScheme.onSurface
-                                              .withOpacity(0.6),
+                                          color: theme.colorScheme.onSurface,
                                         ),
                                       ),
                                     ],
@@ -182,16 +181,15 @@ class PostCard extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHighest
-                                    .withOpacity(0.3),
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 post.body,
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   height: 1.5,
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.8),
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ),

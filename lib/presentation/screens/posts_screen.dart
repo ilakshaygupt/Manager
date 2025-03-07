@@ -1,20 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:task_manager/presentation/blocs/post_service/post_bloc.dart';
+import 'package:task_manager/presentation/blocs/post_service/post_event.dart';
+import 'package:task_manager/presentation/blocs/post_service/post_state.dart';
 import 'package:task_manager/presentation/screens/error_view.dart';
 import 'package:task_manager/presentation/screens/loading_view.dart';
 import 'package:task_manager/presentation/screens/post_lists.dart';
 
-import '../providers/posts_provider.dart';
-class PostsScreen extends ConsumerStatefulWidget {
+class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
 
   @override
-  _PostsScreenState createState() => _PostsScreenState();
+  State<PostsScreen> createState() => _PostsScreenState();
 }
 
-class _PostsScreenState extends ConsumerState<PostsScreen> {
+class _PostsScreenState extends State<PostsScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
 
@@ -22,6 +24,7 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    context.read<PostBloc>().add(FetchPosts());
   }
 
   @override
@@ -36,11 +39,11 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
     _debounce = Timer(const Duration(milliseconds: 300), () {
       final userIdText = _searchController.text;
       if (userIdText.isEmpty) {
-        ref.read(postsProvider.notifier).refresh();
+        context.read<PostBloc>().add(FetchPosts());
       } else {
         final userId = int.tryParse(userIdText);
         if (userId != null) {
-          ref.read(postsProvider.notifier).getPostsByUserId(userId);
+          context.read<PostBloc>().add(FetchPostsByUserId(userId));
         }
       }
     });
@@ -48,8 +51,6 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final postsAsync = ref.watch(postsProvider);
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: Column(
@@ -59,7 +60,6 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.1),
               ),
               child: TextField(
                 controller: _searchController,
@@ -67,13 +67,12 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
                   hintText: 'Search by User ID',
                   prefixIcon: Icon(
                     Icons.search,
-                    color: theme.colorScheme.primary.withOpacity(0.7),
                   ),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
                     onPressed: () {
                       _searchController.clear();
-                      ref.read(postsProvider.notifier).refresh();
+                      context.read<PostBloc>().add(FetchPosts());
                     },
                   ),
                   border: OutlineInputBorder(
@@ -86,13 +85,20 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
             ),
           ),
           Expanded(
-            child: postsAsync.when(
-              loading: () => const LoadingView(),
-              error: (error, stack) => ErrorView(
-                error: error,
-                onRetry: () => ref.read(postsProvider.notifier).refresh(),
-              ),
-              data: (posts) => PostsList(posts: posts),
+            child: BlocBuilder<PostBloc, PostState>(
+              builder: (context, state) {
+                if (state is PostsLoading) {
+                  return const LoadingView();
+                } else if (state is PostsLoaded) {
+                  return PostsList();
+                } else if (state is PostError) {
+                  return ErrorView(
+                    error: state.message,
+                    onRetry: () => context.read<PostBloc>().add(FetchPosts()),
+                  );
+                }
+                return const Center(child: Text('Something went wrong'));
+              },
             ),
           ),
         ],

@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+
 class ErrorView extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
@@ -37,7 +37,7 @@ class ErrorView extends StatelessWidget {
               error.toString(),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 16),

@@ -1,24 +1,62 @@
-import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 class Task {
-  String id;
-  String title;
-  bool isCompleted;
+  final String id;
+  final String title;
+  final bool isCompleted;
 
-  Task({required this.title, this.isCompleted = false}) : id = Uuid().v4();
+  Task({
+    required this.id,
+    required this.title,
+    required this.isCompleted,
+  });
 
-  Map<String, dynamic> toJson() {
-    return {
+  Task copyWith({
+    String? id,
+    String? title,
+    bool? isCompleted,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
       'id': id,
       'title': title,
       'isCompleted': isCompleted,
     };
   }
 
-  factory Task.fromJson(Map<String, dynamic> json) {
+  factory Task.fromMap(Map<String, dynamic> map) {
     return Task(
-      title: json['title'],
-      isCompleted: json['isCompleted'],
-    )..id = json['id'];
+      id: map['id'] as String,
+      title: map['title'] as String,
+      isCompleted: map['isCompleted'] as bool,
+    );
   }
+
+  String toJson() => json.encode(toMap());
+
+  factory Task.fromJson(String source) =>
+      Task.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() =>
+      'Task(id: $id, title: $title, isCompleted: $isCompleted)';
+
+  @override
+  bool operator ==(covariant Task other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.title == title &&
+        other.isCompleted == isCompleted;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ title.hashCode ^ isCompleted.hashCode;
 }

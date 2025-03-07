@@ -12,7 +12,7 @@ class EmptyTasksPlaceholder extends StatelessWidget {
           Icon(
             Icons.task_alt_outlined,
             size: 64,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
           Text(
@@ -25,8 +25,7 @@ class EmptyTasksPlaceholder extends StatelessWidget {
           Text(
             'Add a task to get started',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
           ),
         ],
